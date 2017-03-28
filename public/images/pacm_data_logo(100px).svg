@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="100px" height="100px" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 42 (36781) - http://www.bohemiancoding.com/sketch -->
+    <title>pacm_data_logo(55px)</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="92.0510675%" y1="23.7336024%" x2="9.36786267%" y2="75.7982962%" id="linearGradient-1">
+            <stop stop-color="#E74C3C" offset="0%"></stop>
+            <stop stop-color="#6E6C6C" offset="50.0416301%"></stop>
+            <stop stop-color="#3498DB" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="73.4076261%" y1="89.5932887%" x2="34.584981%" y2="17.854095%" id="linearGradient-2">
+            <stop stop-color="#FFFFFF" offset="0%"></stop>
+            <stop stop-color="#000000" offset="100%"></stop>
+        </linearGradient>
+        <circle id="path-3" cx="50" cy="50" r="13.8888889"></circle>
+        <filter x="-50%" y="-50%" width="200%" height="200%" filterUnits="objectBoundingBox" id="filter-4">
+            <feOffset dx="0" dy="0" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="1" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.5 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="PACM-Logo" transform="translate(-252.000000, -252.000000)">
+            <g id="pacm_data_logo(55px)" transform="translate(252.000000, 252.000000)">
+                <polygon id="Letter-P-Stem" fill="#3498DB" points="25 50 33.3333333 45.7766152 33.3333333 97.2789403 25 93.0555556"></polygon>
+                <polygon id="Letter-D-Stem" fill="#E74C3C" points="66.6666667 2.74322612 75 6.94444444 75 50 66.6666667 54.2012183"></polygon>
+                <ellipse id="Center-Circle" fill="url(#linearGradient-1)" cx="50" cy="50" rx="25" ry="25"></ellipse>
+                <path d="M42.1432171,73.7404658 C44.6139118,74.5576921 47.2553026,75 50,75 C59.0457886,75 66.9694765,70.1957163 71.3586671,62.9995459 L61.6303326,46.339996 C61.0047619,45.2687205 59.5657302,44.7498568 58.4070371,45.1654495 L40.9278804,51.4347617 C39.7612352,51.8532065 38.9811784,53.171447 39.1678134,54.3855048 L42.1432171,73.7404658 Z" id="Center-Circle-Shadow-Gradient" fill-opacity="0.4" fill="url(#linearGradient-2)" opacity="0.625339674"></path>
+                <g id="Center-Cirlce-Cutout">
+                    <use fill="black" fill-opacity="1" filter="url(#filter-4)" xlink:href="#path-3"></use>
+                    <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-3"></use>
+                </g>
+                <path d="M77.7777778,8.41971687 C91.1776194,17.3892874 100,32.664355 100,50 C100,77.6142375 77.6142375,100 50,100 C45.1807228,100 40.5206932,99.3181802 36.1111111,98.0457407 L36.1111111,86.3353954 C40.4244437,87.9851192 45.1066785,88.8888889 50,88.8888889 C71.4777403,88.8888889 88.8888889,71.4777403 88.8888889,50 C88.8888889,39.4038607 84.651039,29.7975243 77.7777778,22.7834292 L77.7777778,8.41971687 Z M63.8888889,1.95425926 L63.8888889,13.6646046 C59.5755563,12.0148808 54.8933215,11.1111111 50,11.1111111 C28.5222597,11.1111111 11.1111111,28.5222597 11.1111111,50 C11.1111111,60.5961393 15.348961,70.2024757 22.2222222,77.2165708 L22.2222222,91.5802831 C8.82238064,82.6107126 0,67.335645 0,50 C0,22.3857625 22.3857625,0 50,0 C54.8192772,0 59.4793068,0.681819777 63.8888889,1.95425926 Z" id="Outer-Circle" fill="#18BC9C"></path>
+                <path d="M36.1111111,49.8603951 C36.1863827,42.2540094 42.375816,36.1111111 50,36.1111111 C57.624184,36.1111111 63.8136173,42.2540094 63.8888889,49.8603951 L36.1111111,49.8603951 Z" id="Half-Circle" fill="#E3E3E3"></path>
+            </g>
+        </g>
+    </g>
+</svg>

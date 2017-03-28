@@ -1,0 +1,5 @@
+/node_modules
+.tern-project
+/*.env
+/app/config/development.json
+.DS_Store

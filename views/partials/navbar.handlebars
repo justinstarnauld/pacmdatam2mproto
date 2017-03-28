@@ -1,0 +1,37 @@
+<nav class="navbar navbar-default navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/dashboards">
+
+        <span><img id="navbar-logo" src="/images/pacm_data_logo(100px).svg" height="30px" alt="">&nbsp PACM DATA</span>
+      </a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav navbar-right">
+        {{!-- <li><a href="/dashboards">Dashboard</a></li> --}}
+        <li><a href="/dashboards/myboards">My Boards</a></li>
+        <li><a href="/devices">Devices</a></li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><img src="{{user.picture}}" class="profile-img" alt="profile image"> {{user.nickname}} <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="/users"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>&nbsp Profile</a></li>
+            <li><a href="#"><span class="glyphicon glyphicon-bell" aria-hidden="true"></span>&nbsp Alerts</a></li>
+            <li><a href="#"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span>&nbsp Settings</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="/logout">Logout</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<script type="text/javascript">
+  $('.nav li.active').removeClass('active');
+  $('a[href="' + location.pathname + '"]').closest('li').addClass('active');
+</script>

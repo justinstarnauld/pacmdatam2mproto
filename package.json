@@ -1,0 +1,38 @@
+{
+  "name": "thingsplace",
+  "version": "0.0.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "~1.15.2",
+    "connect-ensure-login": "^0.1.1",
+    "connect-flash": "^0.1.1",
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.2.0",
+    "dotenv": "^4.0.0",
+    "express": "~4.14.0",
+    "express-handlebars": "^3.0.0",
+    "express-messages": "^1.0.1",
+    "express-session": "^1.15.1",
+    "express-validator": "^3.1.2",
+    "mongodb": "^2.2.24",
+    "mongoose": "^4.8.6",
+    "morgan": "~1.7.0",
+    "passport": "^0.3.2",
+    "passport-auth0": "^0.6.0",
+    "serve-favicon": "~2.3.0",
+    "socket.io": "^1.7.3",
+    "socket.io-stream": "^0.9.1",
+    "request": "2.33.0",
+    "socket.io-client": "0.9.16"
+  },
+  "devDependencies": {
+    "should": "3.1.2",
+    "uuid": "1.4.1"
+  }
+}
