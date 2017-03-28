@@ -12,7 +12,7 @@ if (process.env.NODE_ENV === 'production') {
         title: "PACM DATA"
       },
       auth: {
-        redirectUrl: process.env.host + "/callback",
+        redirectUrl: process.env.AUTH0_CALLBACK_URL,
         responseType: 'code',
         params: {
           scope: 'openid name email picture'
