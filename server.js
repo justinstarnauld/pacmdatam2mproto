@@ -33,6 +33,15 @@ const strategy = new Auth0Strategy({
     return done(null, profile);
   });
 
+// Enforce SSL redirect middleware function
+function requireHTTPS(req, res, next) {
+  // The 'x-forwarded-proto' check is for Heroku
+  if (!req.secure && req.get('x-forwarded-proto') !== 'https' && process.env.NODE_ENV !== "development") {
+    return res.redirect('https://' + req.get('host') + req.url);
+  }
+  next();
+}
+
 passport.use(strategy);
 // This can be used to keep a smaller payload
 passport.serializeUser(function(user, done) {
@@ -53,6 +62,7 @@ app.engine('handlebars', exphbs({
 
 
 // uncomment after placing your favicon in /public
+app.use(requireHTTPS)
 app.use(favicon(path.join(__dirname, 'public', 'pacm-data-favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
