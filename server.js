@@ -1,4 +1,7 @@
 'use strict';
+// =========================================================
+// IMPORT DEPENDENCIES
+// =========================================================
 const express = require('express');
 const path = require('path');
 const favicon = require('serve-favicon');
@@ -52,6 +55,14 @@ passport.deserializeUser(function(user, done) {
 });
 
 // view engine setup
+var hbs = exphbs.create({
+    // Specify helpers which are only registered on this instance.
+    helpers: {
+      getJsonContext: function(data, options) {
+          return options.fn(JSON.parse(data));
+        }
+    }
+});
 app.set('port', process.env.PORT || 3000);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'handlebars');

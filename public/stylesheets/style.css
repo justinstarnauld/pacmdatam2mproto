@@ -114,11 +114,15 @@ li .active {
 }
 
 /*Device page styles*/
+.device-search-well {
+  margin-bottom: 0;
+}
+
 .device-title {
   margin-top: 0;
 }
 
-.device-save-button {
+#device-save-button {
   margin-top: 5px
 }
 
@@ -161,4 +165,37 @@ li .active {
 
 .device-well {
   margin-top: 5px;
+}
+
+.saved-device-panel {
+  margin-top: 16px;
+}
+
+.saved-device-panel .panel-heading {
+  padding: 20px 15px;
+}
+
+.saved-device-panel .panel-body {
+  padding-top: 30px;
+}
+
+.saved-device-panel .panel-title {
+  color: #677783;
+}
+
+.saved-device-panel a:hover {
+  text-decoration: none;
+}
+
+.saved-device-panel a:focus {
+  text-decoration: none;
+}
+
+#saved-device-refresh-button {
+  margin-bottom: 20px;
+}
+
+#device-saved-icon {
+  font-size: 1.1em;
+  padding-top: 12px;
 }

@@ -1,5 +1,6 @@
 'use strict';
 const deviceHelpers = require('./devices');
+const userHelpers = require('./users');
 
 // empty allDevices array unless the first item name is the same as the search device
 let ensureEmptyAllDevicesArray = (allDevices, data) => {
@@ -87,6 +88,9 @@ module.exports = {
   listenForDeviceDweets: deviceHelpers.listenForDeviceDweets,
   stopListeningForDeviceDweets: deviceHelpers.stopListeningForDeviceDweets,
   stopListeningToAllDweets: deviceHelpers.stopListeningToAllDweets,
+  findUserByAuth0Id: userHelpers.findUserByAuth0Id,
+  addDeviceToUserAndSave: userHelpers.addDeviceToUserAndSave,
+  removeSavedDeviceFromUser: userHelpers.removeSavedDeviceFromUser,
   ensureEmptyAllDevicesArray,
   findDeviceByName,
   findDeviceNameBySocketID,

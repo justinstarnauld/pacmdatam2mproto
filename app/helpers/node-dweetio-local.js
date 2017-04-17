@@ -310,8 +310,11 @@
 
 				socket.on("connect", function () {
 					// Subscribe to all of the things that we might have asked for before connecting
-					for (var id in listenCallbacks) {
-						socket.emit("subscribe", {thing: id, key: key});
+					// But make sure first the socket object is not set to undefined.
+					if (socket !== undefined) {
+						for (var id in listenCallbacks) {
+							socket.emit("subscribe", {thing: id, key: key});
+						}
 					}
 				});
 

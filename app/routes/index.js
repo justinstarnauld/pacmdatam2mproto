@@ -4,6 +4,7 @@ const passport = require('passport');
 const router = express.Router();
 const ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn();
 const config = require('../config');
+const User = require('../db/user');
 
 const env = {
   AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID,
@@ -15,7 +16,6 @@ const auth0Options = require('../config')
 // GET Home Page
 router.get('/', (req, res, next) => {
   res.render('index');
-  console.log(auth0Options.auth0Config);
 });
 
 // Render Login Template
@@ -34,6 +34,7 @@ router.get('/callback',
   passport.authenticate('auth0', { failureRedirect: '/' }),
   (req, res) => {
     res.redirect(req.session.returnTo || '/dashboards');
+    User.createUser(req.user.id, req.user);
   });
 
 module.exports = router;

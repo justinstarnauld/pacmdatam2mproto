@@ -21,6 +21,7 @@ let latestDweetForDevice = (dweetName, dweetSource) => {
         response = { error: 'No device found!!!' }
       } else if (dweetDevice) {
         response = dweetDevice;
+        response.thingspace = dweetSource;
       }
       resolve(response);
     });

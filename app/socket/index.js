@@ -33,5 +33,23 @@ module.exports = (io, app) => {
         // remove device from locals array
         .then(h.removeDeviceFromList(allDevices, socket));
     });
+    // when a user chooses to save a device
+    socket.on('saveDeviceToUser', data => {
+      // find and return the requesting user
+      h.findUserByAuth0Id(data.userId)
+        .then(user => {
+          // add this device to the user's savedDeviceArray and return the updated user.
+          h.addDeviceToUserAndSave(user, data.deviceData);
+        });
+    });
+    // when a user chooses to remove a saved device
+    socket.on('removeDeviceFromUser', data => {
+      // find and return the requesting user
+      h.findUserByAuth0Id(data.userId)
+        .then(user => {
+          // remove this device from the user's savedDeviceArray and return the updated user.
+          h.removeSavedDeviceFromUser(user, data.deviceTitle);
+        });
+    })
   });
 }

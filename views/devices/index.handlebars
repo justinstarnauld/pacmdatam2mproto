@@ -1,218 +1,368 @@
 {{> navbar}}
 <div class="container page-wrap">
   <div class="row">
-    <div class="col-md-8 col-md-offset-2">
+    <div class="col-md-8">
       <br>
-      <form id="device-search-form" action="/devices" method="post">
-        <div class="text-right">
-          <span id="tsLabel" class="text-muted">THINGSPACE&nbsp</span>
-          <input id="toggle-event" name="dataSource" type="checkbox"  checked data-toggle="toggle"
-                                                                      data-size="mini"
-                                                                      data-on="<"
-                                                                      data-off=">"
-                                                                      data-onstyle="danger"
-                                                                      data-offstyle="info">
-          <span id="blLabel" class="text-muted">&nbspBUG LABS</span>
-        </div>
-        <br><br>
-        <div class="input-group">
-          <input type="text" name="dweetName" class="form-control" placeholder="Search for devices...">
-          <span class="input-group-btn">
-            <button id="searchDevice" class="btn btn-default" type="submit">Go!</button>
-          </span>
-        </div>
-      </form>
+      <div class="well well-lg device-search-well">
+        <form id="device-search-form" action="/devices" method="post">
+          <div class="text-right">
+            <span id="tsLabel" class="text-muted">THINGSPACE&nbsp</span>
+            <input id="toggle-event" name="dataSource" type="checkbox"  checked data-toggle="toggle"
+                                                                        data-size="mini"
+                                                                        data-on="<"
+                                                                        data-off=">"
+                                                                        data-onstyle="danger"
+                                                                        data-offstyle="info">
+            <span id="blLabel" class="text-muted">&nbspBUG LABS</span>
+          </div>
+          <br><br>
+          <div class="input-group">
+            <input type="text" name="dweetName" class="form-control" placeholder="Search for devices...">
+            <span class="input-group-btn">
+              <button id="searchDevice" class="btn btn-default active" type="submit">Go!</button>
+            </span>
+          </div>
+        </form>
+      </div>
       <br><br>
         <div id="dweetDataContent">
           {{!-- Dweet Data Content Appended Here --}}
         </div>
     </div>
+    <div class="col-md-4">
+      <div class="panel-group saved-device-panel" id="accordion" role="tablist" aria-multiselectable="true">
+        <div class="panel panel-default">
+          <div class="panel-heading" role="tab" id="headingOne">
+            <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+              <h4 class="panel-title"><span class="glyphicon glyphicon-saved"></span> Saved Devices <span class="glyphicon glyphicon-chevron-down pull-right"></span></h4>
+            </a>
+          </div>
+          <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+            <div class="panel-body">
+              {{!-- Refresh button --}}
+              <a href="#" id="saved-device-refresh-button" class="btn btn-sm btn-default btn-block active" role="button"><span class="glyphicon glyphicon-refresh"></span> Refresh</a>
+              <div id="savedDevicesList" class="container-fluid">
+                {{!-- Saved Devices Content Appended Here --}}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 <script type="text/javascript">
-  'use strict';
-  $(() => {
-    let socket = io('{{host}}' + '/devicedata', {
-      transports: ['websocket']
-    });
+'use strict';
+$(() => {
+  let socket = io('{{host}}' + '/devicedata', {
+    transports: ['websocket']
+  });
 
-    $('#device-search-form').submit((event) => {
-      event.preventDefault();
-    });
+  let userDevicesArray = JSON.parse('{{{localUserArray}}}');
+  let savedDevicesArray = userDevicesArray || [];
+  let userId = '{{user.id}}';
 
-    // GET LATEST DWEET LOGIC
-    $('#searchDevice').on('click', () => {
-      let searchDeviceInput = $("input[name='dweetName']");
-      let toggleInputValue = $('#toggle-event').is(":checked");
-        if(searchDeviceInput.val() !== '') {
-          socket.emit('getLatestDweet', { searchInput: searchDeviceInput.val(), toggleInput: toggleInputValue});
-        }
-      searchDeviceInput.val('')
-    });
+  $('#device-search-form').submit((event) => {
+    event.preventDefault();
+  });
 
-    // Event emitter for initial device content
-    socket.on('deviceDweetContent', data => {
-      let parsedDweet = JSON.parse(data);
-      if (parsedDweet.error) {
-        noDeviceFoundError();
-      } else {
-        deviceDataContent(parsedDweet);
+  // GET LATEST DWEET LOGIC
+  $('#searchDevice').on('click', () => {
+    let searchDeviceInput = $("input[name='dweetName']");
+    let toggleInputValue = $('#toggle-event').is(":checked");
+      if(searchDeviceInput.val() !== '') {
+        socket.emit('getLatestDweet', { searchInput: searchDeviceInput.val(), toggleInput: toggleInputValue});
       }
-    });
+    searchDeviceInput.val('')
+  });
 
-    let noDeviceFoundError = () => {
-      let dweetDataContentDiv = $('#dweetDataContent');
-      let errorMsg =  `<div class="well well-sm">
-                        <h5 class="text-muted">Uh oh! No device data found by that name...</h5>
-                      </div>`
-      dweetDataContentDiv.html('').append(errorMsg);
+  // Event emitter for initial device content
+  socket.on('deviceDweetContent', data => {
+    let parsedDweet = JSON.parse(data);
+    if (parsedDweet.error) {
+      console.log(parsedDweet);
+      noDeviceFoundError();
+    } else {
+      deviceDataContent(parsedDweet);
     }
+  });
 
-    let deviceDataContent = (parseData) => {
-      let dweetDataContentDiv = $('#dweetDataContent');
-      // Get device name
-      let dweetThingName = parseData.thing;
-      // Get device content
-      let dweetContent = parseData.content;
-      // Socket data for raw well
-      let jsonData = JSON.stringify(parseData, null, 2)
-      // Get device timestamp
-      let socketTimestamp = moment(parseData.created).format("MMMM Do YYYY, h:mm:ss a")
-      // Device content list template
-      let dweetValueList = prop => {
-        return  `<li class="dweet-data-visual">
-                  <div class="col-xs-4 dweet-key">
-                    <p>${prop}:</p>
-                  </div>
-                  <div class="col-xs-8 text-right dweet-value">
-                    <p class="lead">${dweetContent[prop]}</p>
-                  </div>
-                </li>`;
+  // Remove a saved device from the DOM and savedDevicesArray on click event
+  $('#savedDevicesList').on('click', '.remove-saved-device', function(event) {
+    event.preventDefault();
+    let parentDiv = $(this).parents().eq(1);
+    let deviceName = $(this).parents().eq(1).attr('id');
+    if (confirm("Remove this saved device?")) {
+      parentDiv.slideUp(300);
+      removeSavedDevice(savedDevicesArray, deviceName);
+    }
+  });
+
+  // View a device data from the savedDevicesArray on click event
+  $('#savedDevicesList').on('click', '.view-saved-device', function(event) {
+    event.preventDefault();
+    let deviceName = $(this).parents().eq(1).attr('id');
+    if (deviceName) {
+      viewSavedDeviceData(savedDevicesArray, deviceName);
+    }
+  });
+
+  let saveCurrentDevice = (parsedDweet, styleNumber) => {
+    if (parsedDweet) {
+      let savedDeviceObj = {
+        title: parsedDweet.thing,
+        thingspace: parsedDweet.thingspace,
+        styleValue: styleNumber,
+        active: true,
+        deviceSaved: true
       }
-      // Update device content list data
-      let dweetValueListData = '';
-      for(let prop in dweetContent) {
-        dweetValueListData += dweetValueList(prop);
+      if (savedDevicesArray.length === 0) {
+        $('#saved-device-refresh-button').removeClass('disabled').addClass('active')
       }
-      // Device content template
-      let template = `<div class="container-fluid">
-                        <div id="device-title-container" class="alert alert-info row">
-                          <div class="col-xs-7">
-                            <h1 class="device-title">${dweetThingName}</h1>
-                            <p><small id="deviceTimestamp">Last updated on ${socketTimestamp}</small></p>
+      savedDevicesArray.push(savedDeviceObj);
+      socket.emit('saveDeviceToUser', { deviceData: savedDeviceObj, userId: userId});
+      updateSavedDeviceList(savedDeviceObj);
+      $('#device-save-button').replaceWith('<span id="device-saved-icon" class="glyphicon glyphicon-ok-circle"></span> Device Saved!');
+    }
+  }
+
+  let checkSavedDeviceDataContent = (device) => {
+    socket.emit('checkForDeviceContent', { searchInput: device.title, toggleInput: device.thingspace});
+  }
+
+  let updateSavedDeviceList = (savedDeviceObj) => {
+    let savedDeviceColorPalette = ['info', 'danger', 'warning', 'success']
+    let savedDeviceListDiv =
+      `<div id="${savedDeviceObj.title}" class="alert alert-${savedDeviceColorPalette[savedDeviceObj.styleValue]} row">
+        <div class="col-xs-6">
+          <h4>${savedDeviceObj.title}</h4>
+        </div>
+        <div class="col-xs-6 text-right">
+          <p>Active <span class="glyphicon glyphicon-ok-sign"></span></p>
+          <a href="#" class="view-saved-device btn btn-${savedDeviceColorPalette[savedDeviceObj.styleValue]} btn-xs" role="button">View</a>
+          <a href="#" class="remove-saved-device btn btn-${savedDeviceColorPalette[savedDeviceObj.styleValue]} btn-xs" role="button">Remove</a>
+        </div>
+      </div>`
+    $(savedDeviceListDiv).hide().prependTo('#savedDevicesList').slideDown(300);
+  }
+
+  // check the savedDevicesArray length on load. Update DOM with appropiate data and set refresh button state
+  if (savedDevicesArray.length > 0) {
+    savedDevicesArray.forEach(device => {
+      updateSavedDeviceList(device);
+    });
+  } else {
+    $('#saved-device-refresh-button').removeClass('active').addClass('disabled')
+  }
+
+  let checkForSavedDeviceByName = (devicesArray, deviceName) => {
+    let findDevice = devicesArray.findIndex((element, index, array) => {
+      if (element.title === deviceName) {
+        return true
+      } else {
+        return false
+      }
+    });
+    return findDevice > -1 ? true : false;
+  }
+
+  let viewSavedDeviceData = (devicesArray, deviceName) => {
+    let findDevice = devicesArray.findIndex((element, index, array) => {
+      return element.title === deviceName ? true : false;
+    });
+    // if the device is found, emit getLatestDweet to server.
+    if (findDevice > -1) {
+      let device = devicesArray[findDevice];
+      socket.emit('getLatestDweet', { searchInput: device.title, toggleInput: device.thingspace});
+    }
+  }
+
+  let removeSavedDevice = (devicesArray, deviceName) => {
+    let findDevice = devicesArray.findIndex((element, index, array) => {
+      return element.title === deviceName ? true : false;
+    });
+    // if the device is found, remove it from the array.
+    if (findDevice > -1) {
+      socket.emit('removeDeviceFromUser', { deviceTitle: deviceName, userId: userId});
+      devicesArray.splice(findDevice, 1);
+    }
+    if (savedDevicesArray.length === 0) {
+      $('#saved-device-refresh-button').removeClass('active').addClass('disabled')
+    }
+  }
+
+  let noDeviceFoundError = () => {
+    let dweetDataContentDiv = $('#dweetDataContent');
+    let errorMsg =  `<div class="well well-sm">
+                      <h5 class="text-muted">Uh oh! No device data found by that name...</h5>
+                    </div>`
+    dweetDataContentDiv.html('').append(errorMsg);
+  }
+
+  let deviceDataContent = (parseData) => {
+    let dweetDataContentDiv = $('#dweetDataContent');
+    // Get device name
+    let dweetThingName = parseData.thing;
+    // Get device content
+    let dweetContent = parseData.content;
+    // Socket data for raw well
+    let jsonData = JSON.stringify(parseData, null, 2)
+    // Get device timestamp
+    let socketTimestamp = moment(parseData.created).format("MMMM Do YYYY, h:mm:ss a")
+    // Device content list template
+    let dweetValueList = prop => {
+      return  `<li class="dweet-data-visual">
+                <div class="col-xs-4 dweet-key">
+                  <p>${prop}:</p>
+                </div>
+                <div class="col-xs-8 text-right dweet-value">
+                  <p class="lead">${dweetContent[prop]}</p>
+                </div>
+              </li>`;
+    }
+    // Update device content list data
+    let dweetValueListData = '';
+    for(let prop in dweetContent) {
+      dweetValueListData += dweetValueList(prop);
+    }
+    // function to create a random number between 0 - 3 for the diviceTitleDivArray styles
+    let deviceTitleStyleGenerator = () => {
+      return Math.floor(Math.random() * 4)
+    }
+    // varaible to store the random style value
+    let styleValue = deviceTitleStyleGenerator();
+    // Color palette options array for device-title-container
+    let deviceTitleDivColorPalette = ['info', 'danger', 'warning', 'success']
+    // Color palette options array for device save button
+    let deviceSaveButtonColorPalette = ['warning', 'primary', 'default', 'primary']
+    // Get and set state for the save device button component
+    let alreadySavedDevice = checkForSavedDeviceByName(savedDevicesArray, dweetThingName);
+    let saveButtonState;
+    if (alreadySavedDevice) {
+      saveButtonState = '<span id="device-saved-icon" class="glyphicon glyphicon-ok-circle"></span> Device Saved!'
+    } else {
+      saveButtonState = `<a href="#" id="device-save-button" class="btn btn-sm btn-${deviceSaveButtonColorPalette[styleValue]}"><span class="glyphicon glyphicon-save"></span> Save Device</a>`
+    }
+    // device-tile-container div template. To be used for random color generation.
+    let deviceTitleDivTemplate =
+      `<div id="device-title-container" class="alert alert-${deviceTitleDivColorPalette[styleValue]} row">
+        <div class="col-xs-7">
+          <h1 class="device-title">${dweetThingName}</h1>
+          <p><small id="deviceTimestamp">Last updated on ${socketTimestamp}</small></p>
+        </div>
+        <div class="col-xs-5 text-right save-device-button">
+          ${saveButtonState}
+        </div>
+      </div>`
+    // Device content template
+    let template = `<div class="container-fluid">
+                      ${deviceTitleDivTemplate}
+                    </div>
+                    <hr>
+                    <div>
+                      <!-- Nav tabs -->
+                      <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a href="#visual" aria-controls="visual" role="tab" data-toggle="tab">Visual</a></li>
+                        <li role="presentation" ><a href="#raw" aria-controls="raw" role="tab" data-toggle="tab">Raw</a></li>
+                      </ul>
+                      <!-- Tab panes -->
+                      <div class="container-fluid">
+                        <div class="tab-content device-well">
+                          <div role="tabpanel" class="tab-pane fade in active" id="visual">
+                            <div class="well well-lg row">
+                              <ul id="socket-visual" class="list-group">
+                                ${dweetValueListData}
+                              </ul>
+                            </div>
                           </div>
-                          <div class="col-xs-5 text-right save-device-button">
-                            <a href="#" class="btn btn-sm btn-warning device-save-button"><span class="glyphicon glyphicon-ok-circle"></span> Save Device</a>
+                          <div role="tabpanel" class="tab-pane fade" id="raw">
+                            <div id="socket-raw" class="well well-lg row">
+                              <pre class="dweet-data-json">${jsonData}</pre>
+                            </div>
                           </div>
                         </div>
                       </div>
-                      <hr>
-                      <div>
-                        <!-- Nav tabs -->
-                        <ul class="nav nav-tabs" role="tablist">
-                          <li role="presentation" class="active"><a href="#visual" aria-controls="visual" role="tab" data-toggle="tab">Visual</a></li>
-                          <li role="presentation" ><a href="#raw" aria-controls="raw" role="tab" data-toggle="tab">Raw</a></li>
-                        </ul>
-                        <!-- Tab panes -->
-                        <div class="container-fluid">
-                          <div class="tab-content device-well">
-                            <div role="tabpanel" class="tab-pane fade in active" id="visual">
-                              <div class="well well-lg row">
-                                <ul id="socket-visual" class="list-group">
-                                  ${dweetValueListData}
-                                </ul>
-                              </div>
-                            </div>
-                            <div role="tabpanel" class="tab-pane fade" id="raw">
-                              <div id="socket-raw" class="well well-lg row">
-                                <pre class="dweet-data-json">${jsonData}</pre>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>`
-      // Append to body
-      dweetDataContentDiv.html('').append(template);
+                    </div>`
+    // Append to body
+    dweetDataContentDiv.html('').append(template);
+    $('#device-save-button').on('click', () => {
+      saveCurrentDevice(parseData, styleValue);
+    });
+  }
+
+  // LISTEN FOR NEW DWEETS LOGIC
+  socket.on('deviceDweetStream', data => {
+
+    let parseData = JSON.parse(data);
+    // Socket data for raw well
+    let jsonData = JSON.stringify(parseData, null, 2)
+    $('pre').replaceWith('<pre class="dweet-data-json">' + jsonData + '</pre>')
+
+    let dweetContent = parseData.content
+    // Socket data for visual well
+    let socketTimestamp = moment(parseData.created).format("MMMM Do YYYY, h:mm:ss a")
+    $('small#deviceTimestamp').replaceWith(`<small id="deviceTimestamp">Last updated on ${socketTimestamp}</small>`);
+
+    let dweetValueList = prop => {
+      return  `<li class="dweet-data-visual">
+                <div class="col-xs-4 dweet-key">
+                  <p>${prop}:</p>
+                </div>
+                <div class="col-xs-8 text-right dweet-value">
+                  <p class="lead">${dweetContent[prop]}</p>
+                </div>
+              </li>`;
     }
-
-    // LISTEN FOR NEW DWEETS LOGIC
-    socket.on('deviceDweetStream', data => {
-
-      let parseData = JSON.parse(data);
-
-      // Socket data for raw well
-      let jsonData = JSON.stringify(parseData, null, 2)
-      $('pre').replaceWith('<pre class="dweet-data-json">' + jsonData + '</pre>')
-
-      let dweetContent = parseData.content
-      // Socket data for visual well
-      let socketTimestamp = moment({{parseData.created}}).format("MMMM Do YYYY, h:mm:ss a")
-      $('small#deviceTimestamp').replaceWith(`<small id="deviceTimestamp">Last updated on ${socketTimestamp}</small>`);
-
-      let dweetValueList = prop => {
-        return  `<li class="dweet-data-visual">
-                  <div class="col-xs-4 dweet-key">
-                    <p>${prop}:</p>
-                  </div>
-                  <div class="col-xs-8 text-right dweet-value">
-                    <p class="lead">${dweetContent[prop]}</p>
-                  </div>
-                </li>`;
-      }
-      let dweetValueListData = '';
-      for(let prop in dweetContent) {
-        dweetValueListData += dweetValueList(prop);
-      }
-      $('ul#socket-visual').replaceWith(`<ul id="socket-visual" class="list-group">${dweetValueListData}</ul>`);
-    });
+    let dweetValueListData = '';
+    for(let prop in dweetContent) {
+      dweetValueListData += dweetValueList(prop);
+    }
+    $('ul#socket-visual').replaceWith(`<ul id="socket-visual" class="list-group">${dweetValueListData}</ul>`);
+  });
 
 
 
-    // TOGGLE SWITCH LOGIC
-    $(document).ready(keepClassy());
+  // TOGGLE SWITCH LOGIC
+  $(document).ready(keepClassy());
 
-    $(function() {
-      $('#toggle-event').change(function() {
-        if($("#toggle-event").is(':checked')) {
-          $("#tsLabel").removeClass('text-muted').addClass('text-danger');
-          $("#blLabel").removeClass('text-info').addClass('text-muted');
-          localStorage.setItem("keepTSClass", $('#tsLabel').hasClass('text-danger'));
-          localStorage.removeItem("keepBLClass");
-        } else {
-          $("#blLabel").removeClass('text-muted').addClass('text-info');
-          $("#tsLabel").removeClass('text-danger').addClass('text-muted');
-          localStorage.setItem("keepBLClass", $('#bsLabel').hasClass('text-info'));
-          localStorage.removeItem("keepTSClass");
-        }
-      });
-    });
-
-    function keepClassy() {
-      if(localStorage.getItem("keepBLClass")) {
-        $('#toggle-event').bootstrapToggle('off')
-        $("#blLabel").removeClass('text-muted').addClass('text-info');
-        $("#tsLabel").removeClass('text-danger').addClass('text-muted');
-      } else if(localStorage.getItem("keepTSClass")) {
-        $('#toggle-event').bootstrapToggle('on')
+  $(function() {
+    $('#toggle-event').change(function() {
+      if($("#toggle-event").is(':checked')) {
         $("#tsLabel").removeClass('text-muted').addClass('text-danger');
         $("#blLabel").removeClass('text-info').addClass('text-muted');
+        localStorage.setItem("keepTSClass", $('#tsLabel').hasClass('text-danger'));
+        localStorage.removeItem("keepBLClass");
       } else {
-        $('#toggle-event').bootstrapToggle('on')
-        $("#tsLabel").removeClass('text-muted').addClass('text-danger');
+        $("#blLabel").removeClass('text-muted').addClass('text-info');
+        $("#tsLabel").removeClass('text-danger').addClass('text-muted');
+        localStorage.setItem("keepBLClass", $('#bsLabel').hasClass('text-info'));
+        localStorage.removeItem("keepTSClass");
       }
-    }
-
-    $('#visual a[href="#visual"]').tab('show'); // Select tab by name
-    $('#raw a[href="#raw"]').tab('show'); // Select tab by name
-
-    // Custom classes for device title alert pannel
-    $('form#device-search-form').on('submit',function() {
-      let toggleIdValue = $('#toggle-event').is(":checked");
-      let searchDeviceInput = $("input[name='dweetName']");
     });
-
-    // Moment.js
-    // let momentTimestamp = moment({{device.created}}).format("MMMM Do YYYY, h:mm:ss a")
-    // $('#deviceTimestamp').text(`Last updated on ${momentTimestamp}`);
   });
+
+  function keepClassy() {
+    if(localStorage.getItem("keepBLClass")) {
+      $('#toggle-event').bootstrapToggle('off')
+      $("#blLabel").removeClass('text-muted').addClass('text-info');
+      $("#tsLabel").removeClass('text-danger').addClass('text-muted');
+    } else if(localStorage.getItem("keepTSClass")) {
+      $('#toggle-event').bootstrapToggle('on')
+      $("#tsLabel").removeClass('text-muted').addClass('text-danger');
+      $("#blLabel").removeClass('text-info').addClass('text-muted');
+    } else {
+      $('#toggle-event').bootstrapToggle('on')
+      $("#tsLabel").removeClass('text-muted').addClass('text-danger');
+    }
+  }
+
+  $('#visual a[href="#visual"]').tab('show'); // Select tab by name
+  $('#raw a[href="#raw"]').tab('show'); // Select tab by name
+
+  // Custom classes for device title alert pannel
+  $('form#device-search-form').on('submit',function() {
+    let toggleIdValue = $('#toggle-event').is(":checked");
+    let searchDeviceInput = $("input[name='dweetName']");
+  });
+});
 </script>
