@@ -1,5 +1,6 @@
 'use strict';
 const User = require('../db/user');
+const latestDweetForDevice = require('./devices').latestDweetForDevice
 
 // find a device by a given name
 let findUserByAuth0Id = auth0Id => {
@@ -49,6 +50,41 @@ let addDeviceToUserAndSave = (user, device) => {
   }
 }
 
+// update a given device from the user's savedDevices array
+let updateDeviceStateAndSave = (user) => {
+  return new Promise (resolve => {
+    let updateArrayPromise = function(device) {
+      return new Promise(resolve => {
+        resolve(
+          latestDweetForDevice(device.title, device.thingspace).then(response => {
+            if (response.error && device.active === true) {
+              device.active = false
+              return device
+            } else if (response.thing && device.active === false){
+              device.active = true
+              return device
+            }
+            return device
+          })
+        )
+      });
+    }
+    let updatedArray = user.savedDevices.map(updateArrayPromise);
+    let results = Promise.all(updatedArray);
+    results.then(data => {
+      User.findByIdAndUpdate(user._id, {savedDevices: data}, (err, user) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(user);
+        }
+      });
+      user.save();
+      resolve(user)
+    });
+  });
+}
+
 // find and remove the device from user's savedDevices array
 let removeSavedDeviceFromUser = (user, device) => {
   return new Promise((resolve, reject) => {
@@ -68,5 +104,6 @@ let removeSavedDeviceFromUser = (user, device) => {
 module.exports = {
   findUserByAuth0Id,
   addDeviceToUserAndSave,
-  removeSavedDeviceFromUser
+  removeSavedDeviceFromUser,
+  updateDeviceStateAndSave
 }

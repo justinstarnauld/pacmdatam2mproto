@@ -191,6 +191,15 @@ li .active {
   text-decoration: none;
 }
 
+.saved-device-title {
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.saved-device-title:hover {
+  overflow: visible;
+}
+
 #saved-device-refresh-button {
   margin-bottom: 20px;
 }

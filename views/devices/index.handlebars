@@ -77,6 +77,18 @@ $(() => {
   });
 
   // Event emitter for initial device content
+  socket.on('returnedUsersSavedDevicesState', data => {
+    let updatedDevivceState = JSON.parse(data);
+    savedDevicesArray = updatedDevivceState.slice(0);
+    savedDevicesArray.forEach(device => {
+      updateSavedDeviceList(device, (savedDeviceListDiv) => {
+        $(`#${device.title}`).replaceWith(savedDeviceListDiv);
+      });
+    });
+    $('#saved-device-refresh-button').removeClass('disabled').addClass('active')
+  });
+
+  // Event emitter for initial device content
   socket.on('deviceDweetContent', data => {
     let parsedDweet = JSON.parse(data);
     if (parsedDweet.error) {
@@ -85,6 +97,14 @@ $(() => {
     } else {
       deviceDataContent(parsedDweet);
     }
+  });
+
+  $('#saved-device-refresh-button').on('click', function(event) {
+    event.preventDefault();
+    $('#saved-device-refresh-button').removeClass('active').addClass('disabled')
+    $('#savedDevicesList').find('a').addClass('disabled');
+    $('#savedDevicesList').find('p').replaceWith('<p><span class="glyphicon glyphicon-option-horizontal"></span></p>')
+    checkSavedDeviceDataContent(savedDevicesArray);
   });
 
   // Remove a saved device from the DOM and savedDevicesArray on click event
@@ -121,35 +141,46 @@ $(() => {
       }
       savedDevicesArray.push(savedDeviceObj);
       socket.emit('saveDeviceToUser', { deviceData: savedDeviceObj, userId: userId});
-      updateSavedDeviceList(savedDeviceObj);
+      updateSavedDeviceList(savedDeviceObj, (savedDeviceListDiv) => {
+        $(savedDeviceListDiv).hide().prependTo('#savedDevicesList').slideDown(300);
+      });
       $('#device-save-button').replaceWith('<span id="device-saved-icon" class="glyphicon glyphicon-ok-circle"></span> Device Saved!');
     }
   }
 
-  let checkSavedDeviceDataContent = (device) => {
-    socket.emit('checkForDeviceContent', { searchInput: device.title, toggleInput: device.thingspace});
+  let checkSavedDeviceDataContent = (devicesArray) => {
+    socket.emit('checkForDeviceContent', { userDevicesArray: devicesArray, userId: userId});
   }
 
-  let updateSavedDeviceList = (savedDeviceObj) => {
+  let updateSavedDeviceList = (savedDeviceObj, callback) => {
     let savedDeviceColorPalette = ['info', 'danger', 'warning', 'success']
+    let activeState;
+    if (savedDeviceObj.active) {
+      activeState = `<p>Active <span class="glyphicon glyphicon-ok-sign"></span></p>
+                     <a href="#" class="view-saved-device btn btn-${savedDeviceColorPalette[savedDeviceObj.styleValue]} btn-xs" role="button">View</a>`
+    } else {
+      activeState = `<p>No Data <span class="glyphicon glyphicon-info-sign"></span></p>
+                     <a href="#" class="view-saved-device disabled btn btn-${savedDeviceColorPalette[savedDeviceObj.styleValue]} btn-xs" role="button">View</a>`
+    }
     let savedDeviceListDiv =
       `<div id="${savedDeviceObj.title}" class="alert alert-${savedDeviceColorPalette[savedDeviceObj.styleValue]} row">
         <div class="col-xs-6">
-          <h4>${savedDeviceObj.title}</h4>
+          <h4 class="saved-device-title">${savedDeviceObj.title}</h4>
         </div>
         <div class="col-xs-6 text-right">
-          <p>Active <span class="glyphicon glyphicon-ok-sign"></span></p>
-          <a href="#" class="view-saved-device btn btn-${savedDeviceColorPalette[savedDeviceObj.styleValue]} btn-xs" role="button">View</a>
+          ${activeState}
           <a href="#" class="remove-saved-device btn btn-${savedDeviceColorPalette[savedDeviceObj.styleValue]} btn-xs" role="button">Remove</a>
         </div>
       </div>`
-    $(savedDeviceListDiv).hide().prependTo('#savedDevicesList').slideDown(300);
+    callback(savedDeviceListDiv);
   }
 
   // check the savedDevicesArray length on load. Update DOM with appropiate data and set refresh button state
   if (savedDevicesArray.length > 0) {
     savedDevicesArray.forEach(device => {
-      updateSavedDeviceList(device);
+      updateSavedDeviceList(device, (savedDeviceListDiv) => {
+        $(savedDeviceListDiv).hide().prependTo('#savedDevicesList').slideDown(300);
+      });
     });
   } else {
     $('#saved-device-refresh-button').removeClass('active').addClass('disabled')
@@ -167,6 +198,17 @@ $(() => {
   }
 
   let viewSavedDeviceData = (devicesArray, deviceName) => {
+    let findDevice = devicesArray.findIndex((element, index, array) => {
+      return element.title === deviceName ? true : false;
+    });
+    // if the device is found, emit getLatestDweet to server.
+    if (findDevice > -1) {
+      let device = devicesArray[findDevice];
+      socket.emit('getLatestDweet', { searchInput: device.title, toggleInput: device.thingspace});
+    }
+  }
+
+  let updateDeviceStateVisuals = (devicesArray, deviceName) => {
     let findDevice = devicesArray.findIndex((element, index, array) => {
       return element.title === deviceName ? true : false;
     });

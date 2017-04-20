@@ -51,5 +51,16 @@ module.exports = (io, app) => {
           h.removeSavedDeviceFromUser(user, data.deviceTitle);
         });
     })
+    // check device data for each saved device on page load or refresh button click event
+    socket.on('checkForDeviceContent', data => {
+      // find and return the requesting user
+      h.findUserByAuth0Id(data.userId)
+        .then(user => {
+          h.updateDeviceStateAndSave(user)
+          .then(updatedUser => {
+            socket.emit('returnedUsersSavedDevicesState', JSON.stringify(updatedUser.savedDevices));
+          });
+        });
+    });
   });
 }

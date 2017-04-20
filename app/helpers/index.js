@@ -91,6 +91,7 @@ module.exports = {
   findUserByAuth0Id: userHelpers.findUserByAuth0Id,
   addDeviceToUserAndSave: userHelpers.addDeviceToUserAndSave,
   removeSavedDeviceFromUser: userHelpers.removeSavedDeviceFromUser,
+  updateDeviceStateAndSave: userHelpers.updateDeviceStateAndSave,
   ensureEmptyAllDevicesArray,
   findDeviceByName,
   findDeviceNameBySocketID,
